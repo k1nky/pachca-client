@@ -1,7 +1,9 @@
+from requests import Request, Session
 import requests
 from urllib.parse import urljoin
 from http import HTTPStatus
 import logging
+from json import JSONDecodeError
 
 from pachca_client.api.exceptions import (PachcaClientUnexpectedResponseException,
                                           PachcaClientBadRequestException,
@@ -18,43 +20,53 @@ class Client:
         }
         self.proxies = proxies
         self.raise_on_error = raise_on_error
+        self.session = Session()
 
     def request_url(self, method: str):
         return urljoin(self.API_URL, method)
 
-    def call_api_post(self, method: str, **kwargs) -> list:
-        response = requests.post(self.request_url(method), 
-                      headers=self.headers,
-                      proxies=self.proxies,
-                      json=kwargs)
-        return self.handle_response(response)
+    def call_api_post(self, method: str, **kwargs) -> list:        
+        request = Request(method='post', url=self.request_url(method), headers=self.headers)
+        if len(kwargs) > 0:
+            request.json = kwargs
+        return self.call(request)
     
     def call_api_get(self, method: str, **kwargs) -> list:
-        response = requests.get(self.request_url(method), 
-                      headers=self.headers,
-                      proxies=self.proxies,
-                      params=kwargs)
+        request = Request(method='get', url=self.request_url(method), headers=self.headers)
+        if len(kwargs) > 0:
+            request.params = kwargs
+        return self.call(request)
+    
+    def call(self, request: requests.Request) -> list:
+        prequest = request.prepare()
+        response = self.session.send(prequest, proxies=self.proxies)
         return self.handle_response(response)
     
     def handle_response(self, response: requests.Response) -> list:
-        status_code = response.status_code
-        body = response.json()
         try:
-            self.check_response_status(status_code, body)
+            self.check_response_status(response)
         except PachcaClientException as e:
             logger.error(f'request failed with {e}')
             if self.raise_on_error:
                 raise e
+        try:
+            body = response.json()
+        except JSONDecodeError:
+            return []
         if 'data' in body:
             return body['data']
         return []
     
-    def check_response_status(self, status_code: int, body: dict):
-        if status_code in (HTTPStatus.OK, HTTPStatus.CREATED, HTTPStatus.NOT_FOUND):
+    def check_response_status(self, response: requests.Response):
+        if response.status_code in (HTTPStatus.OK, HTTPStatus.CREATED, HTTPStatus.NOT_FOUND):
             return
-        if status_code >= 400 and status_code < 500:
+        if response.status_code >= 400 and response.status_code < 500:
             error_message = 'no error message'
+            try:
+                body = response.json()
+            except JSONDecodeError:
+                error_message = response.text
             if 'errors' in body:
                 error_message = body['errors']
             raise PachcaClientBadRequestException(error_message)
-        raise PachcaClientUnexpectedResponseException(f"unexpected response with status code {status_code}")
+        raise PachcaClientUnexpectedResponseException(f"unexpected response with status code {response.status_code}")
