@@ -1,5 +1,6 @@
 from pachca_client.api.client import Client
 from pachca_client.api.cache import Cache
+from pachca_client.api.file import File
 
 ENTITY_TYPE_DISCUSSION = 'discussion'
 ENTITY_TYPE_USER = 'user'
@@ -9,6 +10,7 @@ METHOD_CHATS = 'chats'
 METHOD_PROFILE_STATUS = 'profile/status'
 METHOD_MESSAGES = 'messages'
 METHOD_USERS = 'users'
+METHOD_UPLOAD = 'uploads'
 
 class Pachca:
     def __init__(self, client: Client, cache: Cache = None):
@@ -52,14 +54,14 @@ class Pachca:
 
     def get_status(self):
         return self.client.call_api_get(METHOD_PROFILE_STATUS)
-
+    
     def new_message(self,
                     content: str,
                     entity_type: str = ENTITY_TYPE_DISCUSSION,
                     entity_name: str = '',
                     entity_id: int = None,
                     parent_message_id: int = None,
-                    files: list = []):
+                    files: list[File] = []):
         if entity_id is None and len(entity_name) > 0:
             if entity_type == ENTITY_TYPE_DISCUSSION:
                 entity_id = self.resolve_chat_name(entity_name)
@@ -75,8 +77,11 @@ class Pachca:
         if parent_message_id is not None:
             payload['message']['parent_message_id'] = parent_message_id
         if len(files) != 0:
-            # TODO: upload files
-            pass
+            payload['files'] = []
+            for file in files:
+                file_info = self.upload(file)
+                file.prepare(file_info['key'])
+                payload['files'].append(dict(file))
         return self.client.call_api_post(METHOD_MESSAGES, **payload)
     
     def new_thread(self, id: int):
@@ -86,3 +91,13 @@ class Pachca:
     def get_status(self, message_id):
         method = f'{METHOD_MESSAGES}/{message_id}'
         return self.client.call_api_get(method)
+
+    def upload(self, file: File):
+        # get pre-sign object
+        info = self.client.call_api_post(METHOD_UPLOAD)
+        # upload file
+        url = info['direct_url']
+        del info['direct_url']
+        with open(file.path, 'rb') as f:
+            response = self.client.upload(url, f, info)            
+        return info

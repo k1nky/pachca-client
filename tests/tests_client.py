@@ -1,6 +1,5 @@
 import unittest.mock as mock
 import unittest
-from requests import Session
 from pachca_client import Client
 import pachca_client.api.exceptions as ex
 
@@ -8,6 +7,7 @@ def mock_response(status_code, body = ""):
     mm = mock.MagicMock()
     mm.status_code = status_code
     mm.json.return_value = body
+    mm.text = body
     return mm
 
 
@@ -22,16 +22,17 @@ class TestCheckResponse(unittest.TestCase):
 
     def test_check_response_with_raised_error(self):
         cases = [
-            CheckResponseCase("Unauthorized", mock_response(401, ""), ex.PachcaClientBadRequestException, 'no error message'),
+            CheckResponseCase("Unauthorized", mock_response(401, ""), ex.PachcaClientBadRequestException, ''),
             CheckResponseCase("Moved", mock_response(307, ""), ex.PachcaClientUnexpectedResponseException, 'unexpected response with status code 307'),
             CheckResponseCase("Unauthorized", mock_response(401, {'errors': 'custom error'}), ex.PachcaClientBadRequestException, 'custom error'),
+            CheckResponseCase("InvalidJson", mock_response(401, 'errors=custom error'), ex.PachcaClientBadRequestException, 'errors=custom error'),
             CheckResponseCase("Internal", mock_response(501, ""), ex.PachcaClientUnexpectedResponseException, 'unexpected response with status code 501')
         ]
-        client = Client('no-token')        
+        client = Client('no-token')
         for case in cases:
             with self.assertRaises(case.expected_exception) as context:
                 client.check_response_status(case.response)
-            self.assertTrue(case.expected_message in context.exception.args)
+            self.assertTrue(case.expected_message in context.exception.args, case.name)
 
     def test_check_response_with_no_error(self):
         cases = [
@@ -48,35 +49,39 @@ class TestCheckResponse(unittest.TestCase):
             self.assertFalse(raised)
 
 
-class HandleResponseCase:
-    def __init__(self, name, status_code, body, expected_data):
-        self.name = name
-        self.status_code = status_code
-        self.body = body
-        self.expected_data = expected_data
+class TestSuccessHandleResponse(unittest.TestCase):
+    def setUp(self):
+        self.client = Client('')
 
-class TestHandleResponse(unittest.TestCase):
-    def test_with_no_error(self):
-        cases = [
-            HandleResponseCase('', 201, [], []),
-            HandleResponseCase('', 201, '', []),
-            HandleResponseCase('', 200, {'data': [{'id': 123, 'name': 'Name'}]}, [{'id': 123, 'name': 'Name'}]),
-        ]
-        client = Client('')
-        for case in cases:
-            result = client.handle_response(mock_response(case.status_code, case.body))
-            self.assertListEqual(result, case.expected_data)
+    def test_empty_list_response(self):
+        result = self.client.handle_response(mock_response(201, []))
+        self.assertListEqual(result, [])
+
+    def test_empty_response(self):
+        result = self.client.handle_response(mock_response(201))
+        self.assertEqual(result, '')
+
+    def test_data_attribute(self):
+        result = self.client.handle_response(mock_response(200, {'data': [{'id': 123, 'name': 'Name'}]}))
+        self.assertListEqual(result, [{'id': 123, 'name': 'Name'}])
+
+    def test_no_data_attribute(self):
+        result = self.client.handle_response(mock_response(200, {'id': 123, 'name': 'Name'}))
+        self.assertDictEqual(result, {'id': 123, 'name': 'Name'})
+
+
+class TestFailedHandleResponse(unittest.TestCase):
 
     def test_with_raised_error(self):
         client = Client('')
         with self.assertRaises(ex.PachcaClientBadRequestException):
-            client.handle_response(mock_response(401, ''))
+            client.handle_response(mock_response(401))
 
     def test_with_silent_error(self):
         client = Client('', raise_on_error=False)
         raised = False
         try:
-            client.handle_response(mock_response(401, ''))
+            client.handle_response(mock_response(401))
         except ex.PachcaClientException:
             raised = True
         self.assertFalse(raised)
@@ -88,9 +93,8 @@ class TestCallApi(unittest.TestCase):
         client = Client('secret-token')
         def mock_get(*args, **kwargs):
             request = args[0]
-            self.assertEqual(request.url, 'https://api.pachca.com/api/shared/v1/some_method')
+            self.assertEqual(request.url, 'https://api.pachca.com/api/shared/v1/some_method?arg1=value1&arg2=value2')
             self.assertEqual(request.headers['Authorization'], 'Bearer secret-token')
-            self.assertDictEqual(request.params, {'arg1': 'value1', 'arg2': 'value2'})
             return mock_response(200, '')
         mm = mock.MagicMock()
         mm.send.side_effect = mock_get
@@ -103,7 +107,7 @@ class TestCallApi(unittest.TestCase):
             request = args[0]
             self.assertEqual(request.url, 'https://api.pachca.com/api/shared/v1/some_method')
             self.assertEqual(request.headers['Authorization'], 'Bearer secret-token')
-            self.assertDictEqual(request.json, {'arg1': 'value1', 'arg2': 'value2'})
+            self.assertEqual(request.body, b'{"arg1": "value1", "arg2": "value2"}')
             return mock_response(200, '')
         mm = mock.MagicMock()
         mm.send.side_effect = mock_post
