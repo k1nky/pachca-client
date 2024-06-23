@@ -67,21 +67,22 @@ class Pachca:
                 entity_id = self.resolve_chat_name(entity_name)
             elif entity_type == ENTITY_TYPE_USER:
                 entity_id = self.resolve_user_name(entity_name)
-        payload = {
-            'message': {
-                'entity_type': entity_type,
-                'content': content,
-                'entity_id': entity_id
+        message = {
+            'entity_type': entity_type,
+            'content': content,
+            'entity_id': entity_id
             }
-        }
         if parent_message_id is not None:
-            payload['message']['parent_message_id'] = parent_message_id
+            message['parent_message_id'] = parent_message_id
         if len(files) != 0:
-            payload['files'] = []
+            message['files'] = []
             for file in files:
                 file_info = self.upload(file)
                 file.prepare(file_info['key'])
-                payload['files'].append(file.as_dict())
+                message['files'].append(file.as_dict())
+        payload = {
+            'message': message
+        }
         return self.client.call_api_post(METHOD_MESSAGES, payload)
     
     def new_thread(self, id: int):
