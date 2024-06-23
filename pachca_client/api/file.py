@@ -13,7 +13,7 @@ class File:
         self.size = 0
         self.key = ''
 
-    def __dict__(self):
+    def as_dict(self):
         return {
             'key': self.key,
             'name': self.name,

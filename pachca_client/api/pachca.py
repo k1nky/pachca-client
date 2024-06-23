@@ -81,8 +81,8 @@ class Pachca:
             for file in files:
                 file_info = self.upload(file)
                 file.prepare(file_info['key'])
-                payload['files'].append(dict(file))
-        return self.client.call_api_post(METHOD_MESSAGES, **payload)
+                payload['files'].append(file.as_dict())
+        return self.client.call_api_post(METHOD_MESSAGES, payload)
     
     def new_thread(self, id: int):
         method = f'{METHOD_USERS}/{id}/thread'

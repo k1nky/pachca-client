@@ -33,16 +33,16 @@ class Client:
         request.files = {'file': file}
         return self.call(request)
 
-    def call_api_post(self, method: str, **kwargs) -> any:
+    def call_api_post(self, method: str, payload: any = None) -> any:
         request = Request(method='post', url=self.request_url(method), headers=self.headers)
-        if len(kwargs) > 0:
-            request.json = kwargs
+        if payload:
+            request.json = payload
         return self.call(request)
     
-    def call_api_get(self, method: str, **kwargs) -> any:
+    def call_api_get(self, method: str, payload: any = None) -> any:
         request = Request(method='get', url=self.request_url(method), headers=self.headers)
-        if len(kwargs) > 0:
-            request.params = kwargs
+        if payload:
+            request.params = payload
         return self.call(request)
     
     def call(self, request: requests.Request) -> any:
