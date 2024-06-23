@@ -9,3 +9,7 @@ class PachcaClientUnexpectedResponseException(PachcaClientException):
 
 class PachcaClientBadRequestException(PachcaClientException):
     pass
+
+
+class PachcaClientEntryNotFound(PachcaClientException):
+    pass

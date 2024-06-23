@@ -3,7 +3,8 @@ import unittest
 from pachca_client import Client
 import pachca_client.api.exceptions as ex
 
-def mock_response(status_code, body = ""):
+
+def mock_response(status_code, body=""):
     mm = mock.MagicMock()
     mm.status_code = status_code
     mm.json.return_value = body
@@ -12,11 +13,12 @@ def mock_response(status_code, body = ""):
 
 
 class CheckResponseCase:
-    def __init__(self, name, response, expected_exception = None, expected_message = ""):
+    def __init__(self, name, response, expected_exception=None, expected_message=""):
         self.name = name
         self.response = response
         self.expected_exception = expected_exception
         self.expected_message = expected_message
+
 
 class TestCheckResponse(unittest.TestCase):
 
@@ -26,7 +28,8 @@ class TestCheckResponse(unittest.TestCase):
             CheckResponseCase("Moved", mock_response(307, ""), ex.PachcaClientUnexpectedResponseException, 'unexpected response with status code 307'),
             CheckResponseCase("Unauthorized", mock_response(401, {'errors': 'custom error'}), ex.PachcaClientBadRequestException, 'custom error'),
             CheckResponseCase("InvalidJson", mock_response(401, 'errors=custom error'), ex.PachcaClientBadRequestException, 'errors=custom error'),
-            CheckResponseCase("Internal", mock_response(501, ""), ex.PachcaClientUnexpectedResponseException, 'unexpected response with status code 501')
+            CheckResponseCase("Internal", mock_response(501, ""), ex.PachcaClientUnexpectedResponseException, 'unexpected response with status code 501'),
+            CheckResponseCase("Not Found", mock_response(404, ""), ex.PachcaClientEntryNotFound, '')
         ]
         client = Client('no-token')
         for case in cases:
@@ -37,14 +40,13 @@ class TestCheckResponse(unittest.TestCase):
     def test_check_response_with_no_error(self):
         cases = [
             CheckResponseCase("Created", mock_response(201)),
-            CheckResponseCase("Not found", mock_response(404)),
         ]
         client = Client('')
         for case in cases:
             raised = False
             try:
                 client.check_response_status(case.response)
-            except Exception as e:
+            except Exception:
                 raised = True
             self.assertFalse(raised)
 
@@ -91,6 +93,7 @@ class TestCallApi(unittest.TestCase):
 
     def test_call_api_get(self):
         client = Client('secret-token')
+
         def mock_get(*args, **kwargs):
             request = args[0]
             self.assertEqual(request.url, 'https://api.pachca.com/api/shared/v1/some_method?arg1=value1&arg2=value2')
@@ -99,10 +102,11 @@ class TestCallApi(unittest.TestCase):
         mm = mock.MagicMock()
         mm.send.side_effect = mock_get
         client.session = mm
-        client.call_api_get('some_method', {'arg1': 'value1', 'arg2':'value2'})
+        client.call_api_get('some_method', {'arg1': 'value1', 'arg2': 'value2'})
 
     def test_call_api_post(self):
         client = Client('secret-token')
+
         def mock_post(*args, **kwargs):
             request = args[0]
             self.assertEqual(request.url, 'https://api.pachca.com/api/shared/v1/some_method')
@@ -112,7 +116,7 @@ class TestCallApi(unittest.TestCase):
         mm = mock.MagicMock()
         mm.send.side_effect = mock_post
         client.session = mm
-        client.call_api_post('some_method', {'arg1': 'value1', 'arg2':'value2'})
+        client.call_api_post('some_method', {'arg1': 'value1', 'arg2': 'value2'})
 
 
 if __name__ == '__main__':

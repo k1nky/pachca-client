@@ -21,19 +21,19 @@ pachca = Pachca(Client('MY_ACCESS_TOKEN'), Cache())
 
 ### Send a message
 ```
-# to a chat by its ID
+# to chat by its ID
 message = pachca.new_message(entity_id=111111, content="My message")
 
-# to a chat by its Name
-message = pachca.new_message(entity_name='MyChatName', content="My message")
+# to chat by its Name
+message = pachca.new_message(entity_id='MyChatName', content="My message")
 
-# to a user by its ID
+# to user by its ID
 message = pachca.new_message(entity_id=222222, entity_type='user' content="My message")
 
-# to a user by its Name
-message = pachca.new_message(entity_user='User Name', entity_type='user' content="My message")
+# to user by its Name
+message = pachca.new_message(entity_id='User Name', entity_type='user' content="My message")
 
-# to a thread by its ID
+# to thread by its ID
 # where 333333 is thread id created by `new_thread`
 message = pachca.new_message(entity_id=333333, entity_type='thread' content="My message")
 ```
@@ -47,7 +47,7 @@ files = [
     File('files_a.txt'),
     File('image_a.png', file_type='image')
 ]
-message = pachca.new_message(entity_name="Test", content="Test message!", files=files)
+message = pachca.new_message(entity_id=123456, content="Test message!", files=files)
 
 ```
 

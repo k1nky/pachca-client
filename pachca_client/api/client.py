@@ -9,7 +9,8 @@ from typing import Dict, List, Union, Optional
 
 from pachca_client.api.exceptions import (PachcaClientUnexpectedResponseException,
                                           PachcaClientBadRequestException,
-                                          PachcaClientException)
+                                          PachcaClientException,
+                                          PachcaClientEntryNotFound)
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +73,7 @@ class Client:
         return response.text
 
     def check_response_status(self, response: requests.Response) -> None:
-        if response.status_code in (HTTPStatus.OK, HTTPStatus.CREATED, HTTPStatus.NOT_FOUND, HTTPStatus.NO_CONTENT):
+        if response.status_code in (HTTPStatus.OK, HTTPStatus.CREATED, HTTPStatus.NO_CONTENT):
             return
         if response.status_code >= 400 and response.status_code < 500:
             error_message = ''
@@ -84,5 +85,7 @@ class Client:
                     error_message = response.text
             except ValueError:
                 error_message = response.text
+            if response.status_code == HTTPStatus.NOT_FOUND:
+                raise PachcaClientEntryNotFound(error_message)
             raise PachcaClientBadRequestException(error_message)
         raise PachcaClientUnexpectedResponseException(f"unexpected response with status code {response.status_code}")

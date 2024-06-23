@@ -2,6 +2,7 @@ from pachca_client.api.cache import Cache
 import unittest
 from time import sleep
 
+
 class TestCacheInit(unittest.TestCase):
     def test_init_with_invalid_ttl(self):
         with self.assertRaises(ValueError):
@@ -14,6 +15,7 @@ class TestCacheInit(unittest.TestCase):
         except Exception:
             raised = True
         self.assertFalse(raised)
+
 
 class TestCacheGet(unittest.TestCase):
     def test_not_exists(self):
