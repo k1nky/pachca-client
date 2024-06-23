@@ -1,16 +1,18 @@
+from typing import Any
+
 from pachca_client.api.client import Client
 from pachca_client.api.cache import Cache
 from pachca_client.api.file import File
 
 ENTITY_TYPE_DISCUSSION = 'discussion'
-ENTITY_TYPE_USER = 'user'
 ENTITY_TYPE_THREAD = 'thread'
+ENTITY_TYPE_USER = 'user'
 
 METHOD_CHATS = 'chats'
-METHOD_PROFILE_STATUS = 'profile/status'
 METHOD_MESSAGES = 'messages'
-METHOD_USERS = 'users'
+METHOD_PROFILE_STATUS = 'profile/status'
 METHOD_UPLOAD = 'uploads'
+METHOD_USERS = 'users'
 
 
 class Pachca:
@@ -18,13 +20,13 @@ class Pachca:
         self.client = client
         self.cache = cache
 
-    def set_cached(self, scope: str, value: any):
+    def set_cached(self, scope: str, value: Any) -> Any:
         if self.cache is None:
             return
         self.cache.update(scope, value)
         return value
 
-    def get_cached(self, scope: str):
+    def get_cached(self, scope: str) -> Any:
         if self.cache is None:
             return None
         return self.cache.get(scope)
