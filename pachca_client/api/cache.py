@@ -1,5 +1,6 @@
 from datetime import datetime
 
+
 class Cache:
     def __init__(self, ttl: int = 60):
         if ttl == 0:

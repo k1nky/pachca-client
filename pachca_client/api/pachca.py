@@ -12,6 +12,7 @@ METHOD_MESSAGES = 'messages'
 METHOD_USERS = 'users'
 METHOD_UPLOAD = 'uploads'
 
+
 class Pachca:
     def __init__(self, client: Client, cache: Cache = None):
         self.client = client
@@ -22,12 +23,12 @@ class Pachca:
             return
         self.cache.update(scope, value)
         return value
-    
+
     def get_cached(self, scope: str):
         if self.cache is None:
             return None
         return self.cache.get(scope)
-    
+
     def resolve_chat_name(self, name):
         chats = self.get_cached(METHOD_CHATS)
         if chats is None:
@@ -48,13 +49,13 @@ class Pachca:
 
     def list_chats(self):
         return self.set_cached(METHOD_CHATS, self.client.call_api_get(METHOD_CHATS))
-    
+
     def list_users(self):
         return self.set_cached(METHOD_USERS, self.client.call_api_get(METHOD_USERS))
 
     def get_status(self):
         return self.client.call_api_get(METHOD_PROFILE_STATUS)
-    
+
     def new_message(self,
                     content: str,
                     entity_type: str = ENTITY_TYPE_DISCUSSION,
@@ -84,12 +85,12 @@ class Pachca:
             'message': message
         }
         return self.client.call_api_post(METHOD_MESSAGES, payload)
-    
+
     def new_thread(self, id: int):
         method = f'{METHOD_USERS}/{id}/thread'
         return self.client.call_api_post(method)
-    
-    def get_status(self, message_id):
+
+    def get_message(self, message_id):
         method = f'{METHOD_MESSAGES}/{message_id}'
         return self.client.call_api_get(method)
 

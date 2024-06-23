@@ -3,6 +3,7 @@ import os
 TYPE_FILE = 'file'
 TYPE_IMAGE = 'image'
 
+
 class File:
     def __init__(self, file_path: str, name: str = '', file_type: str = TYPE_FILE):
         self.name = name
@@ -23,7 +24,7 @@ class File:
 
     def get_size(self) -> int:
         return os.path.getsize(self.path)
-    
+
     def prepare(self, key: str):
         self.key = key.replace('${filename}', self.name)
         self.size = self.get_size()

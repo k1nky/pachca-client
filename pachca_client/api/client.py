@@ -12,6 +12,7 @@ from pachca_client.api.exceptions import (PachcaClientUnexpectedResponseExceptio
 
 logger = logging.getLogger(__name__)
 
+
 class Client:
     API_URL = 'https://api.pachca.com/api/shared/v1/'
 
@@ -27,7 +28,7 @@ class Client:
         if method.startswith('http'):
             return method
         return urljoin(self.API_URL, method)
-    
+
     def upload(self, url: str, file: IO, data: dict):
         request = Request(method='post', url=url, headers=self.headers, data=data)
         request.files = {'file': file}
@@ -38,18 +39,18 @@ class Client:
         if payload:
             request.json = payload
         return self.call(request)
-    
+
     def call_api_get(self, method: str, payload: any = None) -> any:
         request = Request(method='get', url=self.request_url(method), headers=self.headers)
         if payload:
             request.params = payload
         return self.call(request)
-    
+
     def call(self, request: requests.Request) -> any:
         prequest = request.prepare()
         response = self.session.send(prequest, proxies=self.proxies)
         return self.handle_response(response)
-    
+
     def handle_response(self, response: requests.Response) -> any:
         try:
             self.check_response_status(response)
@@ -67,7 +68,7 @@ class Client:
             except KeyError:
                 return body
         return response.text
-    
+
     def check_response_status(self, response: requests.Response):
         if response.status_code in (HTTPStatus.OK, HTTPStatus.CREATED, HTTPStatus.NOT_FOUND, HTTPStatus.NO_CONTENT):
             return
