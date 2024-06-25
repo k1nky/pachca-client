@@ -8,10 +8,10 @@ ENTITY_TYPE_DISCUSSION = 'discussion'
 ENTITY_TYPE_THREAD = 'thread'
 ENTITY_TYPE_USER = 'user'
 
-METHOD_CHATS = 'chats'
-METHOD_MESSAGES = 'messages'
-METHOD_UPLOAD = 'uploads'
-METHOD_USERS = 'users'
+PATH_CHATS = 'chats'
+PATH_MESSAGES = 'messages'
+PATH_UPLOAD = 'uploads'
+PATH_USERS = 'users'
 
 
 class Pachca:
@@ -25,38 +25,14 @@ class Pachca:
         return self.cache.get(scope)
 
     def get_message(self, message_id) -> Optional[Dict]:
-        method = f'{METHOD_MESSAGES}/{message_id}'
-        return self.client.call_api_get(method)
+        path = f'{PATH_MESSAGES}/{message_id}'
+        return self.client.call_api_get(path)
 
     def get_chat(self, chat_id: Union[str, int]) -> Optional[Dict]:
         if isinstance(chat_id, str):
             chat_id = self.resolve_chat_name(chat_id)
-        method = f'{METHOD_CHATS}/{chat_id}'
-        return self.client.call_api_get(method)
-
-    def resolve_chat_name(self, name: str) -> Optional[int]:
-        chats = self.get_cached(METHOD_CHATS)
-        if chats is None:
-            chats = self.list_all_chats()
-        for chat in chats:
-            if chat['name'] == name:
-                return chat['id']
-        return None
-
-    def resolve_user_name(self, name: str) -> Optional[int]:
-        users = self.get_cached(METHOD_USERS)
-        if users is None:
-            users = self.list_all_users()
-        for user in users:
-            if user['nickname'] == name:
-                return user['id']
-        return None
-
-    def set_cached(self, scope: str, value: Any) -> Any:
-        if self.cache is None:
-            return value
-        self.cache.update(scope, value)
-        return value
+        path = f'{PATH_CHATS}/{chat_id}'
+        return self.client.call_api(path)
 
     def list_all_chats(self, per: int = 50) -> List:
         page = 1
@@ -68,7 +44,7 @@ class Pachca:
                 page += 1
                 continue
             break
-        return self.set_cached(METHOD_CHATS, chats)
+        return self.set_cached(PATH_CHATS, chats)
 
     def list_all_users(self, per: int = 50) -> List:
         page = 1
@@ -80,7 +56,7 @@ class Pachca:
                 page += 1
                 continue
             break
-        return self.set_cached(METHOD_USERS, users)
+        return self.set_cached(PATH_USERS, users)
 
     def list_chats(self,
                    per: int = 50,
@@ -96,7 +72,7 @@ class Pachca:
             payload['last_message_at_after'] = last_message_at_after
         if last_message_at_before:
             payload['last_message_at_before'] = last_message_at_before
-        response = self.client.call_api_get(METHOD_CHATS, payload)
+        response = self.client.call_api(path=PATH_CHATS, payload=payload)
         if response is None:
             return []
         return response
@@ -106,7 +82,7 @@ class Pachca:
             'chat_id': chat_id,
             'per': per,
             'page': page}
-        return self.client.call_api_get(METHOD_MESSAGES, payload)
+        return self.client.call_api(path=PATH_MESSAGES, payload=payload)
 
     def list_users(self, per: int = 50, page: int = 1, query: Optional[str] = None) -> List:
         payload = {
@@ -115,7 +91,7 @@ class Pachca:
         }
         if query:
             payload['query'] = query
-        response = self.client.call_api_get(METHOD_USERS, payload)
+        response = self.client.call_api(path=PATH_USERS, payload=payload)
         if response is None:
             return []
         return response
@@ -145,18 +121,45 @@ class Pachca:
                 message['files'].append(file.as_dict())
         payload = {
             'message': message}
-        return self.client.call_api_post(METHOD_MESSAGES, payload)
+        return self.client.call_api(path=PATH_MESSAGES, method='post', payload=payload)
 
     def new_thread(self, id: int) -> Optional[Dict]:
-        method = f'{METHOD_MESSAGES}/{id}/thread'
-        return self.client.call_api_post(method)
+        method = f'{PATH_MESSAGES}/{id}/thread'
+        return self.client.call_api(method, method='post')
+
+    def resolve_chat_name(self, name: str) -> Optional[int]:
+        chats = self.get_cached(PATH_CHATS)
+        if chats is None:
+            chats = self.list_all_chats()
+        for chat in chats:
+            if chat['name'] == name:
+                return chat['id']
+        return None
+
+    def resolve_user_name(self, name: str) -> Optional[int]:
+        users = self.get_cached(PATH_USERS)
+        if users is None:
+            users = self.list_all_users()
+        for user in users:
+            if user['nickname'] == name:
+                return user['id']
+        return None
+
+    def set_cached(self, scope: str, value: Any) -> Any:
+        if self.cache is None:
+            return value
+        self.cache.update(scope, value)
+        return value
+
+    def update_message(self, message_id: int, content: str):
+        pass
 
     def upload(self, file: File) -> Optional[Dict]:
         # get pre-signed url
-        info = self.client.call_api_post(METHOD_UPLOAD)
+        info = self.client.call_api_post(PATH_UPLOAD)
         # upload file
         url = info['direct_url']
         del info['direct_url']
         with open(file.path, 'rb') as f:
-            self.client.upload(url, f, info)            
+            self.client.upload(url, f, info)
         return info

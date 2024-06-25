@@ -102,7 +102,7 @@ class TestCallApi(unittest.TestCase):
         mm = mock.MagicMock()
         mm.send.side_effect = mock_get
         client.session = mm
-        client.call_api_get('some_method', {'arg1': 'value1', 'arg2': 'value2'})
+        client.call_api('some_method', 'get', {'arg1': 'value1', 'arg2': 'value2'})
 
     def test_call_api_post(self):
         client = Client('secret-token')
@@ -116,7 +116,7 @@ class TestCallApi(unittest.TestCase):
         mm = mock.MagicMock()
         mm.send.side_effect = mock_post
         client.session = mm
-        client.call_api_post('some_method', {'arg1': 'value1', 'arg2': 'value2'})
+        client.call_api('some_method', 'post', {'arg1': 'value1', 'arg2': 'value2'})
 
 
 if __name__ == '__main__':

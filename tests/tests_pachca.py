@@ -62,18 +62,18 @@ class TestChats(unittest.TestCase):
         self.pachca = get_pachca('')
 
     def test_get_chat_by_id(self):
-        self.pachca.client.call_api_get = mock.MagicMock()
-        self.pachca.client.call_api_get.return_value = {'name': 'Chat1', 'id': 100}
+        self.pachca.client.call_api = mock.MagicMock()
+        self.pachca.client.call_api.return_value = {'name': 'Chat1', 'id': 100}
         self.assertDictEqual(self.pachca.get_chat(100), {'name': 'Chat1', 'id': 100})
 
     def test_get_chat_by_name(self):
-        self.pachca.client.call_api_get = mock.MagicMock()
-        self.pachca.client.call_api_get.return_value = {'name': 'Chat1', 'id': 100}
+        self.pachca.client.call_api = mock.MagicMock()
+        self.pachca.client.call_api.return_value = {'name': 'Chat1', 'id': 100}
         self.pachca.resolve_chat_name = mock.MagicMock()
         self.pachca.resolve_chat_name.return_value = 100
         self.assertDictEqual(self.pachca.get_chat('Chat1'), {'name': 'Chat1', 'id': 100})
         self.pachca.resolve_chat_name.assert_called_once()
-        self.pachca.client.call_api_get.assert_called_once_with('chats/100')
+        self.pachca.client.call_api.assert_called_once_with('chats/100')
 
     def test_list_all_chats(self):
         self.pachca.list_chats = mock.MagicMock()

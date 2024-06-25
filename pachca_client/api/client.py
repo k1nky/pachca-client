@@ -29,24 +29,21 @@ class Client:
         self.raise_on_error = raise_on_error
         self.session = Session()
 
-    def request_url(self, method: str) -> str:
-        return urljoin(self.API_URL, method)
+    def request_url(self, path: str) -> str:
+        return urljoin(self.API_URL, path)
 
     def upload(self, url: str, file: IO, data: Dict) -> ApiResponse:
         request = Request(method='post', url=url, headers=self.headers, data=data)
         request.files = {'file': file}
         return self.call(request)
 
-    def call_api_post(self, method: str, payload: ApiJsonPayload = None) -> ApiResponse:
-        request = Request(method='post', url=self.request_url(method), headers=self.headers)
+    def call_api(self, path: str, method: str = 'get', payload: ApiJsonPayload = None) -> ApiResponse:
+        request = Request(method=method, url=self.request_url(path), headers=self.headers)
         if payload:
-            request.json = payload
-        return self.call(request)
-
-    def call_api_get(self, method: str, payload: ApiJsonPayload = None) -> Union[Dict, List, str]:
-        request = Request(method='get', url=self.request_url(method), headers=self.headers)
-        if payload:
-            request.params = payload
+            if method == 'get':
+                request.params = payload
+            else:
+                request.json = payload
         return self.call(request)
 
     def call(self, request: requests.Request) -> ApiResponse:
