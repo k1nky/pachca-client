@@ -54,7 +54,7 @@ class Pachca:
 
     def set_cached(self, scope: str, value: Any) -> Any:
         if self.cache is None:
-            return
+            return value
         self.cache.update(scope, value)
         return value
 
@@ -152,7 +152,7 @@ class Pachca:
         return self.client.call_api_post(method)
 
     def upload(self, file: File) -> Optional[Dict]:
-        # get pre-sign object
+        # get pre-signed url
         info = self.client.call_api_post(METHOD_UPLOAD)
         # upload file
         url = info['direct_url']

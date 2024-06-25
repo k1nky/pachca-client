@@ -44,7 +44,7 @@ message = pachca.new_message(entity_id=333333, entity_type='thread' content="My 
 from pachca_client import File
 f = File('/home/shal/dev/pachca-client/requirements.txt')
 files = [
-    File('files_a.txt'),
+    File('file_a.txt'),
     File('image_a.png', file_type='image')
 ]
 message = pachca.new_message(entity_id=123456, content="Test message!", files=files)

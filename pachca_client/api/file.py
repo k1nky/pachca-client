@@ -1,4 +1,5 @@
 import os
+from typing import Dict
 
 TYPE_FILE = 'file'
 TYPE_IMAGE = 'image'
@@ -14,7 +15,7 @@ class File:
         self.size = 0
         self.key = ''
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> Dict:
         return {
             'key': self.key,
             'name': self.name,

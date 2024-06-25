@@ -1,6 +1,6 @@
 import unittest.mock as mock
 import unittest
-from pachca_client import get_pachca
+from pachca_client import get_pachca, Pachca, Client, Cache
 
 
 class TestResolveName(unittest.TestCase):
@@ -44,6 +44,19 @@ class TestResolveName(unittest.TestCase):
         self.assertEqual(self.pachca.resolve_chat_name('Chat3'), None)
 
 
+class TestCached(unittest.TestCase):
+    def test_set_cached_no_cache(self):
+        pachca = Pachca(Client(''), None)
+        self.assertEqual(pachca.set_cached('scope1', 'value1'), 'value1')
+
+    def test_set_cached(self):
+        pachca = Pachca(Client(''), Cache())
+        pachca.cache.update = mock.MagicMock()
+        pachca.cache.update.return_value = None
+        self.assertEqual(pachca.set_cached('scope1', 'value1'), 'value1')
+        pachca.cache.update.assert_called_once_with('scope1', 'value1')
+
+
 class TestChats(unittest.TestCase):
     def setUp(self):
         self.pachca = get_pachca('')
@@ -74,3 +87,7 @@ class TestChats(unittest.TestCase):
         self.pachca.list_chats.side_effect = mock_list_chats
         chats = self.pachca.list_all_chats(per=2)
         self.assertListEqual(chats, [{'name': 'Chat1', 'id': 100}, {'name': 'Chat2', 'id': 200}, {'name': 'Chat3', 'id': 300}])
+
+
+if __name__ == '__main__':
+    unittest.main()
