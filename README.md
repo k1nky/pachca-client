@@ -1,3 +1,21 @@
+# Description
+
+The package provides a client for **pachca.com**.
+
+## Supported features
+
+- [x] chats
+- [ ] chat members
+- [x] file upload
+- [x] messages
+- [ ] reactions
+- [ ] status
+- [ ] tasks
+- [ ] tags
+- [x] threads
+- [ ] users
+
+
 # Examples
 
 ## Get the client
