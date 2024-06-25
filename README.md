@@ -1,4 +1,4 @@
-# Description
+# Pachca Client
 
 The package provides a client for **pachca.com**.
 
@@ -14,6 +14,14 @@ The package provides a client for **pachca.com**.
 - [ ] tags
 - [x] threads
 - [ ] users
+
+## Installation
+
+```
+python -m pip install pachca-client
+```
+
+Pachca Client requires Python 3.5 or higher.
 
 
 # Examples
