@@ -29,14 +29,6 @@ class Client:
         self.raise_on_error = raise_on_error
         self.session = Session()
 
-    def request_url(self, path: str) -> str:
-        return urljoin(self.API_URL, path)
-
-    def upload(self, url: str, file: IO, data: Dict) -> ApiResponse:
-        request = Request(method='post', url=url, headers=self.headers, data=data)
-        request.files = {'file': file}
-        return self.call(request)
-
     def call_api(self, path: str, method: str = 'get', payload: ApiJsonPayload = None) -> ApiResponse:
         request = Request(method=method, url=self.request_url(path), headers=self.headers)
         if payload:
@@ -50,6 +42,24 @@ class Client:
         prequest = request.prepare()
         response = self.session.send(prequest, proxies=self.proxies)
         return self.handle_response(response)
+
+    def check_response_status(self, response: requests.Response) -> None:
+        if response.status_code in (HTTPStatus.OK, HTTPStatus.CREATED, HTTPStatus.NO_CONTENT):
+            return
+        if response.status_code >= 400 and response.status_code < 500:
+            error_message = ''
+            try:
+                body = response.json()
+                if isinstance(body, dict) and 'errors' in body:
+                    error_message = body['errors']
+                else:
+                    error_message = response.text
+            except ValueError:
+                error_message = response.text
+            if response.status_code == HTTPStatus.NOT_FOUND:
+                raise PachcaClientEntryNotFound(error_message)
+            raise PachcaClientBadRequestException(error_message)
+        raise PachcaClientUnexpectedResponseException(f"unexpected response with status code {response.status_code}")
 
     def handle_response(self, response: requests.Response) -> ApiResponse:
         try:
@@ -69,20 +79,10 @@ class Client:
                 return body
         return response.text
 
-    def check_response_status(self, response: requests.Response) -> None:
-        if response.status_code in (HTTPStatus.OK, HTTPStatus.CREATED, HTTPStatus.NO_CONTENT):
-            return
-        if response.status_code >= 400 and response.status_code < 500:
-            error_message = ''
-            try:
-                body = response.json()
-                if isinstance(body, dict) and 'errors' in body:
-                    error_message = body['errors']
-                else:
-                    error_message = response.text
-            except ValueError:
-                error_message = response.text
-            if response.status_code == HTTPStatus.NOT_FOUND:
-                raise PachcaClientEntryNotFound(error_message)
-            raise PachcaClientBadRequestException(error_message)
-        raise PachcaClientUnexpectedResponseException(f"unexpected response with status code {response.status_code}")
+    def request_url(self, path: str) -> str:
+        return urljoin(self.API_URL, path)
+
+    def upload(self, url: str, file: IO, data: Dict) -> ApiResponse:
+        request = Request(method='post', url=url, headers=self.headers, data=data)
+        request.files = {'file': file}
+        return self.call(request)

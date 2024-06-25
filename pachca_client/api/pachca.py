@@ -25,8 +25,7 @@ class Pachca:
         return self.cache.get(scope)
 
     def get_message(self, message_id) -> Optional[Dict]:
-        path = f'{PATH_MESSAGES}/{message_id}'
-        return self.client.call_api_get(path)
+        return self.client.call_api_get(f'{PATH_MESSAGES}/{message_id}')
 
     def get_chat(self, chat_id: Union[str, int]) -> Optional[Dict]:
         if isinstance(chat_id, str):
@@ -151,8 +150,14 @@ class Pachca:
         self.cache.update(scope, value)
         return value
 
-    def update_message(self, message_id: int, content: str):
-        pass
+    def update_message(self, message_id: int, content: str, files: List[File] = []) -> Optional[Dict]:
+        message = {
+            'content': content,
+            'files': []
+        }
+        # TODO: update files
+        payload = {'message': message}
+        self.client.call_api(f'{PATH_MESSAGES}/{message_id}', 'put', payload)
 
     def upload(self, file: File) -> Optional[Dict]:
         # get pre-signed url
