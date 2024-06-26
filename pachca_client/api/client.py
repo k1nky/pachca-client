@@ -69,6 +69,7 @@ class Client:
         try:
             body = response.json()
         except JSONDecodeError:
+            # the response body does not contain valid json
             return response.text
         if isinstance(body, dict):
             try:

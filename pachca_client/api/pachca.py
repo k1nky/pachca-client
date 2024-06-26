@@ -3,7 +3,7 @@ from typing import Any, Optional, Dict, List, Union
 from pachca_client.api.client import Client
 from pachca_client.api.cache import Cache
 from pachca_client.api.file import File
-from pachca_client.api.exceptions import PachcaClientEntryNotFound
+from pachca_client.api.exceptions import PachcaClientNotResolved
 
 ENTITY_TYPE_DISCUSSION = 'discussion'
 ENTITY_TYPE_THREAD = 'thread'
@@ -32,7 +32,7 @@ class Pachca:
         if isinstance(chat_id, str):
             chat_id = self.resolve_chat_name(chat_id)
             if chat_id is None:
-                raise PachcaClientEntryNotFound(f'there is no chat: {chat_id}')
+                raise PachcaClientNotResolved(chat_id)
         path = f'{PATH_CHATS}/{chat_id}'
         return self.client.call_api(path)
 
@@ -109,6 +109,8 @@ class Pachca:
                 entity_id = self.resolve_chat_name(entity_id)
             elif entity_type == ENTITY_TYPE_USER:
                 entity_id = self.resolve_user_name(entity_id)
+            if entity_id is None:
+                raise PachcaClientNotResolved(entity_id)
         message = {
             'entity_type': entity_type,
             'content': content,

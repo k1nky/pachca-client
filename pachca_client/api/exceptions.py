@@ -13,3 +13,7 @@ class PachcaClientBadRequestException(PachcaClientException):
 
 class PachcaClientEntryNotFound(PachcaClientException):
     pass
+
+
+class PachcaClientNotResolved(PachcaClientException):
+    pass

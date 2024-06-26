@@ -27,15 +27,15 @@ class TestCheckResponse(unittest.TestCase):
 
     def test_check_response_with_raised_error(self):
         cases = [
-            CheckResponseCase("Unauthorized", mock_response(401, ''), ex.PachcaClientBadRequestException, ''),
-            CheckResponseCase("Unauthorized", mock_response(401, 'plain_error_text', ValueError), ex.PachcaClientBadRequestException, 'plain_error_text'),
+            CheckResponseCase("Empty Text", mock_response(401, ''), ex.PachcaClientBadRequestException, ''),
+            CheckResponseCase("Plain Text", mock_response(401, 'plain_error_text', ValueError), ex.PachcaClientBadRequestException, 'plain_error_text'),
             CheckResponseCase("Moved", mock_response(307, ""), ex.PachcaClientUnexpectedResponseException, 'unexpected response with status code 307'),
             CheckResponseCase("Unauthorized", mock_response(401, {'errors': 'custom error'}), ex.PachcaClientBadRequestException, 'custom error'),
             CheckResponseCase("InvalidJson", mock_response(401, 'errors=custom error'), ex.PachcaClientBadRequestException, 'errors=custom error'),
             CheckResponseCase("Internal", mock_response(501, ""), ex.PachcaClientUnexpectedResponseException, 'unexpected response with status code 501'),
             CheckResponseCase("Not Found", mock_response(404, ""), ex.PachcaClientEntryNotFound, '')
         ]
-        client = Client('no-token')
+        client = Client('')
         for case in cases:
             with self.assertRaises(case.expected_exception) as context:
                 client.check_response_status(case.response)
