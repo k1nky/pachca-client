@@ -4,10 +4,13 @@ from pachca_client import Client
 import pachca_client.api.exceptions as ex
 
 
-def mock_response(status_code, body=""):
+def mock_response(status_code, body="", exception=None):
     mm = mock.MagicMock()
     mm.status_code = status_code
-    mm.json.return_value = body
+    if exception is not None:
+        mm.json.side_effect = exception()
+    else:
+        mm.json.return_value = body
     mm.text = body
     return mm
 
@@ -24,7 +27,8 @@ class TestCheckResponse(unittest.TestCase):
 
     def test_check_response_with_raised_error(self):
         cases = [
-            CheckResponseCase("Unauthorized", mock_response(401, ""), ex.PachcaClientBadRequestException, ''),
+            CheckResponseCase("Unauthorized", mock_response(401, ''), ex.PachcaClientBadRequestException, ''),
+            CheckResponseCase("Unauthorized", mock_response(401, 'plain_error_text', ValueError), ex.PachcaClientBadRequestException, 'plain_error_text'),
             CheckResponseCase("Moved", mock_response(307, ""), ex.PachcaClientUnexpectedResponseException, 'unexpected response with status code 307'),
             CheckResponseCase("Unauthorized", mock_response(401, {'errors': 'custom error'}), ex.PachcaClientBadRequestException, 'custom error'),
             CheckResponseCase("InvalidJson", mock_response(401, 'errors=custom error'), ex.PachcaClientBadRequestException, 'errors=custom error'),

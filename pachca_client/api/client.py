@@ -1,11 +1,9 @@
-from requests import Request, Session
-import requests
-from typing import IO
-from urllib.parse import urljoin
 from http import HTTPStatus
-import logging
 from json import JSONDecodeError
-from typing import Dict, List, Union, Optional
+import logging
+from requests import Request, Session, Response
+from urllib.parse import urljoin
+from typing import Dict, List, Union, Optional, IO
 
 from pachca_client.api.exceptions import (PachcaClientUnexpectedResponseException,
                                           PachcaClientBadRequestException,
@@ -38,12 +36,12 @@ class Client:
                 request.json = payload
         return self.call(request)
 
-    def call(self, request: requests.Request) -> ApiResponse:
+    def call(self, request: Request) -> ApiResponse:
         prequest = request.prepare()
         response = self.session.send(prequest, proxies=self.proxies)
         return self.handle_response(response)
 
-    def check_response_status(self, response: requests.Response) -> None:
+    def check_response_status(self, response: Response) -> None:
         if response.status_code in (HTTPStatus.OK, HTTPStatus.CREATED, HTTPStatus.NO_CONTENT):
             return
         if response.status_code >= 400 and response.status_code < 500:
@@ -61,7 +59,7 @@ class Client:
             raise PachcaClientBadRequestException(error_message)
         raise PachcaClientUnexpectedResponseException(f"unexpected response with status code {response.status_code}")
 
-    def handle_response(self, response: requests.Response) -> ApiResponse:
+    def handle_response(self, response: Response) -> ApiResponse:
         try:
             self.check_response_status(response)
         except PachcaClientException as e:

@@ -3,6 +3,7 @@ from typing import Any, Optional, Dict, List, Union
 from pachca_client.api.client import Client
 from pachca_client.api.cache import Cache
 from pachca_client.api.file import File
+from pachca_client.api.exceptions import PachcaClientEntryNotFound
 
 ENTITY_TYPE_DISCUSSION = 'discussion'
 ENTITY_TYPE_THREAD = 'thread'
@@ -25,11 +26,13 @@ class Pachca:
         return self.cache.get(scope)
 
     def get_message(self, message_id) -> Optional[Dict]:
-        return self.client.call_api_get(f'{PATH_MESSAGES}/{message_id}')
+        return self.client.call_api(f'{PATH_MESSAGES}/{message_id}')
 
     def get_chat(self, chat_id: Union[str, int]) -> Optional[Dict]:
         if isinstance(chat_id, str):
             chat_id = self.resolve_chat_name(chat_id)
+            if chat_id is None:
+                raise PachcaClientEntryNotFound(f'there is no chat: {chat_id}')
         path = f'{PATH_CHATS}/{chat_id}'
         return self.client.call_api(path)
 
@@ -161,7 +164,7 @@ class Pachca:
 
     def upload(self, file: File) -> Optional[Dict]:
         # get pre-signed url
-        info = self.client.call_api_post(PATH_UPLOAD)
+        info = self.client.call_api(PATH_UPLOAD, 'post')
         # upload file
         url = info['direct_url']
         del info['direct_url']
