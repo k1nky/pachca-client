@@ -96,7 +96,7 @@ class TestMessages(unittest.TestCase):
     def test_new_message_to_named_chat(self):
         self.pachca.resolve_chat_name = mock.MagicMock(return_value={'name': 'ChatName', 'id': 100})
         self.pachca.client.call_api = mock.MagicMock(return_value={'id': 200})
-        response = self.pachca.new_message(entity_id='ChatName1', content='Message')
+        response = self.pachca.new_message(chat_id='ChatName1', content='Message')
         self.assertDictEqual(response, {'id': 200})
         self.pachca.resolve_chat_name.assert_called_once_with('ChatName1')
         self.pachca.client.call_api.assert_called_once()

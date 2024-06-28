@@ -48,20 +48,20 @@ pachca = Pachca(Client('MY_ACCESS_TOKEN'), Cache())
 ### Send a message
 ```
 # to chat by its ID
-message = pachca.new_message(entity_id=111111, content="My message")
+message = pachca.new_message(chat_id=111111, content="My message")
 
 # to chat by its Name
-message = pachca.new_message(entity_id='MyChatName', content="My message")
+message = pachca.new_message(chat_id='MyChatName', content="My message")
 
 # to user by its ID
-message = pachca.new_message(entity_id=222222, entity_type='user' content="My message")
+message = pachca.new_message(chat_id=222222, chat_type='user' content="My message")
 
 # to user by its Name
-message = pachca.new_message(entity_id='User Name', entity_type='user' content="My message")
+message = pachca.new_message(chat_id='User Name', chat_type='user' content="My message")
 
 # to thread by its ID
 # where 333333 is thread id created by `new_thread`
-message = pachca.new_message(entity_id=333333, entity_type='thread' content="My message")
+message = pachca.new_message(chat_id=333333, chat_type='thread' content="My message")
 ```
 
 ### Send a message with files:
@@ -73,7 +73,7 @@ files = [
     File('file_a.txt'),
     File('image_a.png', file_type='image')
 ]
-message = pachca.new_message(entity_id=123456, content="Test message!", files=files)
+message = pachca.new_message(chat_id=123456, content="Test message!", files=files)
 
 ```
 

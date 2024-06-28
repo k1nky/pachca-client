@@ -5,9 +5,9 @@ from pachca_client.api.cache import Cache
 from pachca_client.api.file import File
 from pachca_client.api.exceptions import PachcaClientNotResolved
 
-ENTITY_TYPE_DISCUSSION = 'discussion'
-ENTITY_TYPE_THREAD = 'thread'
-ENTITY_TYPE_USER = 'user'
+CHAT_TYPE_DISCUSSION = 'discussion'
+CHAT_TYPE_THREAD = 'thread'
+CHAT_TYPE_USER = 'user'
 
 PATH_CHATS = 'chats'
 PATH_MESSAGES = 'messages'
@@ -143,22 +143,22 @@ class Pachca:
         return response
 
     def new_message(self,
-                    entity_id: Union[str, int],
+                    chat_id: Union[str, int],
                     content: str,
-                    entity_type: str = ENTITY_TYPE_DISCUSSION,
+                    chat_type: str = CHAT_TYPE_DISCUSSION,
                     parent_message_id: int = None,
                     files: List[File] = []) -> Optional[Dict]:
-        if isinstance(entity_id, str):
-            if entity_type == ENTITY_TYPE_DISCUSSION:
-                entity_id = self.resolve_chat_name(entity_id)
-            elif entity_type == ENTITY_TYPE_USER:
-                entity_id = self.resolve_user_name(entity_id)
-            if entity_id is None:
-                raise PachcaClientNotResolved(entity_id)
+        if isinstance(chat_id, str):
+            if chat_type == CHAT_TYPE_DISCUSSION:
+                chat_id = self.resolve_chat_name(chat_id)
+            elif chat_type == CHAT_TYPE_USER:
+                chat_id = self.resolve_user_name(chat_id)
+            if chat_id is None:
+                raise PachcaClientNotResolved(chat_id)
         message = {
-            'entity_type': entity_type,
+            'entity_type': chat_type,
             'content': content,
-            'entity_id': entity_id}
+            'entity_id': chat_id}
         if parent_message_id is not None:
             message['parent_message_id'] = parent_message_id
         if len(files) != 0:
