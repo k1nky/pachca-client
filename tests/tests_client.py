@@ -33,7 +33,7 @@ class TestCheckResponse(unittest.TestCase):
             CheckResponseCase("Unauthorized", mock_response(401, {'errors': 'custom error'}), ex.PachcaClientBadRequestException, 'custom error'),
             CheckResponseCase("InvalidJson", mock_response(401, 'errors=custom error'), ex.PachcaClientBadRequestException, 'errors=custom error'),
             CheckResponseCase("Internal", mock_response(501, ""), ex.PachcaClientUnexpectedResponseException, 'unexpected response with status code 501'),
-            CheckResponseCase("Not Found", mock_response(404, ""), ex.PachcaClientEntryNotFound, '')
+            CheckResponseCase("Not Found", mock_response(404, {'errors': 'custom error'}), ex.PachcaClientEntryNotFound, 'custom error')
         ]
         client = Client('')
         for case in cases:

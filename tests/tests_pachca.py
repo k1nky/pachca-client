@@ -102,5 +102,10 @@ class TestMessages(unittest.TestCase):
         self.pachca.client.call_api.assert_called_once()
 
 
+class TestUpload(unittest.TestCase):
+    def setUp(self):
+        self.pachca = get_pachca('')
+
+
 if __name__ == '__main__':
     unittest.main()

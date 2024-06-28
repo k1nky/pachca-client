@@ -15,6 +15,17 @@ PATH_UPLOAD = 'uploads'
 PATH_USERS = 'users'
 
 
+def validate_paging(func):
+    def inner(*args, **kwargs):
+        if 'page' in kwargs and kwargs['page'] < 0:
+            raise ValueError('page should be greater 1')
+        if 'per' in kwargs and (kwargs['per'] < 0 or kwargs['per'] > 50):
+            raise ValueError('per should between 1 and 50')
+        return func(*args, **kwargs)
+
+    return inner
+
+
 class Pachca:
     def __init__(self, client: Client, cache: Cache = None) -> None:
         self.client = client
@@ -36,6 +47,7 @@ class Pachca:
         path = f'{PATH_CHATS}/{chat_id}'
         return self.client.call_api(path)
 
+    @validate_paging
     def list_all_chats(self, per: int = 50) -> List:
         page = 1
         chats = []
@@ -48,6 +60,7 @@ class Pachca:
             break
         return self.set_cached(PATH_CHATS, chats)
 
+    @validate_paging
     def list_all_users(self, per: int = 50) -> List:
         page = 1
         users = []
@@ -60,6 +73,7 @@ class Pachca:
             break
         return self.set_cached(PATH_USERS, users)
 
+    @validate_paging
     def list_chats(self,
                    per: int = 50,
                    page: int = 1,
@@ -79,14 +93,22 @@ class Pachca:
             return []
         return response
 
-    def list_messages(self, chat_id: int, per: int = 50, page: int = 1) -> Optional[List]:
+    @validate_paging
+    def list_messages(self,
+                      chat_id: int,
+                      per: int = 50,
+                      page: int = 1) -> Optional[List]:
         payload = {
             'chat_id': chat_id,
             'per': per,
             'page': page}
         return self.client.call_api(path=PATH_MESSAGES, payload=payload)
 
-    def list_users(self, per: int = 50, page: int = 1, query: Optional[str] = None) -> List:
+    @validate_paging
+    def list_users(self,
+                   per: int = 50,
+                   page: int = 1,
+                   query: Optional[str] = None) -> List:
         payload = {
             'per': per,
             'page': page
@@ -96,6 +118,28 @@ class Pachca:
         response = self.client.call_api(path=PATH_USERS, payload=payload)
         if response is None:
             return []
+        return response
+
+    def new_chat(self,
+                 name: str,
+                 members: List[int],
+                 group_tags: Optional[List[int]] = None,
+                 is_channel: bool = False,
+                 is_public: bool = False) -> Optional[Dict]:
+        chat = {
+            'name': name,
+            'member_ids': members,
+            'channel': is_channel,
+            'public': is_public
+        }
+        if group_tags is not None:
+            chat['group_tag_ids'] = group_tags
+        payload = {
+            'chat': chat
+        }
+        response = self.client.call_api(PATH_CHATS, 'post', payload)
+        if self.cache is not None:
+            self.list_all_chats()
         return response
 
     def new_message(self,
@@ -128,8 +172,7 @@ class Pachca:
         return self.client.call_api(path=PATH_MESSAGES, method='post', payload=payload)
 
     def new_thread(self, id: int) -> Optional[Dict]:
-        method = f'{PATH_MESSAGES}/{id}/thread'
-        return self.client.call_api(method, method='post')
+        return self.client.call_api(f'{PATH_MESSAGES}/{id}/thread', method='post')
 
     def resolve_chat_name(self, name: str) -> Optional[int]:
         chats = self.get_cached(PATH_CHATS)
@@ -155,7 +198,28 @@ class Pachca:
         self.cache.update(scope, value)
         return value
 
-    def update_message(self, message_id: int, content: str, files: List[File] = []) -> Optional[Dict]:
+    def update_chat(self,
+                    chat_id: Union[str, int],
+                    name: str,
+                    is_public: bool = False) -> Optional[Dict]:
+        if isinstance(chat_id, str):
+            chat_id = self.resolve_chat_name(chat_id)
+        payload = {
+            'chat': {
+                'name': name,
+                'public': is_public
+            }
+        }
+        path = f'{PATH_CHATS}/{chat_id}'
+        response = self.client.call_api(path, 'put', payload)
+        if self.cache is not None:
+            self.list_all_chats()
+        return response
+
+    def update_message(self,
+                       message_id: int,
+                       content: str,
+                       files: List[File] = []) -> Optional[Dict]:
         message = {
             'content': content,
             'files': []
