@@ -1,6 +1,7 @@
 import unittest.mock as mock
 import unittest
 from pachca_client import get_pachca, Pachca, Client, Cache
+from pachca_client.api.pachca import validate_paging
 
 
 class TestResolveName(unittest.TestCase):
@@ -56,6 +57,16 @@ class TestCached(unittest.TestCase):
         self.assertEqual(pachca.set_cached('scope1', 'value1'), 'value1')
         pachca.cache.update.assert_called_once_with('scope1', 'value1')
 
+    def test_get_cached_no_cache(self):
+        pachca = Pachca(Client(''), None)
+        self.assertEqual(pachca.get_cached('scope1'), None)
+
+    def test_get_cached(self):
+        pachca = Pachca(Client(''), Cache())
+        pachca.cache.get = mock.MagicMock(return_value=['value1'])
+        self.assertListEqual(pachca.get_cached('scope1'), ['value1'])
+        pachca.cache.get.assert_called_once_with('scope1')
+
 
 class TestChats(unittest.TestCase):
     def setUp(self):
@@ -102,9 +113,49 @@ class TestMessages(unittest.TestCase):
         self.pachca.client.call_api.assert_called_once()
 
 
-class TestUpload(unittest.TestCase):
-    def setUp(self):
-        self.pachca = get_pachca('')
+class TestValidate(unittest.TestCase):
+
+    @validate_paging
+    def f(*args, **kwargs):
+        return
+
+    def test_validate_paging_valid_values(self):
+        raised = False
+        try:
+            self.f()
+        except Exception:
+            raised = True
+        self.assertFalse(raised)
+
+    def test_validate_paging_per_value(self):
+        cases = [
+            [0, True],
+            [-10, True],
+            [10, False],
+            [50, False],
+            [150, True],
+        ]
+        for case in cases:
+            raised = False
+            try:
+                self.f(per=case[0])
+            except ValueError:
+                raised = True
+            self.assertEqual(case[1], raised)
+
+    def test_validate_paging_page_value(self):
+        cases = [
+            [0, True],
+            [-10, True],
+            [10, False],
+        ]
+        for case in cases:
+            raised = False
+            try:
+                self.f(page=case[0])
+            except ValueError:
+                raised = True
+            self.assertEqual(case[1], raised)
 
 
 if __name__ == '__main__':

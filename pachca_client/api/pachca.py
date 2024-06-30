@@ -17,9 +17,9 @@ PATH_USERS = 'users'
 
 def validate_paging(func):
     def inner(*args, **kwargs):
-        if 'page' in kwargs and kwargs['page'] < 0:
-            raise ValueError('page should be greater 1')
-        if 'per' in kwargs and (kwargs['per'] < 0 or kwargs['per'] > 50):
+        if 'page' in kwargs and kwargs['page'] <= 0:
+            raise ValueError('page should be greater 0')
+        if 'per' in kwargs and (kwargs['per'] <= 0 or kwargs['per'] > 50):
             raise ValueError('per should between 1 and 50')
         return func(*args, **kwargs)
 
