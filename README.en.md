@@ -12,7 +12,7 @@ The package provides a client for **pachca.com**.
 - [ ] chat members
 - [x] file upload
 - [x] messages
-- [ ] reactions
+- [x] reactions
 - [ ] status
 - [ ] tasks
 - [ ] tags
