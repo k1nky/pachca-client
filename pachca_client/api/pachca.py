@@ -31,6 +31,12 @@ class Pachca:
         self.client = client
         self.cache = cache
 
+    def delete_reaction(self, message_id: int, code: str) -> None:
+        payload = {
+            'code': code
+        }
+        self.client.call_api(f'{PATH_MESSAGES}/{message_id}/reactions', method='delete', payload=payload)    
+
     def get_cached(self, scope: str) -> Any:
         if self.cache is None:
             return None
@@ -105,6 +111,17 @@ class Pachca:
         return self.client.call_api(path=PATH_MESSAGES, payload=payload)
 
     @validate_paging
+    def list_reactions(self,
+                       message_id: int,
+                       per: int = 50,
+                       page: int = 1) -> Optional[List]:
+        payload = {
+            'per': per,
+            'page': page
+        }
+        return self.client.call_api(path=f'{PATH_MESSAGES}/{message_id}/reactions', payload=payload)
+
+    @validate_paging
     def list_users(self,
                    per: int = 50,
                    page: int = 1,
@@ -170,6 +187,12 @@ class Pachca:
         payload = {
             'message': message}
         return self.client.call_api(path=PATH_MESSAGES, method='post', payload=payload)
+
+    def new_reaction(self, message_id: int, code: str) -> None:
+        payload = {
+            'code': code
+        }
+        self.client.call_api(f'{PATH_MESSAGES}/{message_id}/reactions', method='post', payload=payload)
 
     def new_thread(self, id: int) -> Optional[Dict]:
         return self.client.call_api(f'{PATH_MESSAGES}/{id}/thread', method='post')
