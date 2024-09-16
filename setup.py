@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='pachca-client',
-    version='0.1.0',
+    version='0.1.2',
     description='pachca.com API client',
     url='https://github.com/k1nky/pachca-client',
     author='Andrey Shalashov',

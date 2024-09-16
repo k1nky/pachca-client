@@ -10,22 +10,28 @@ from pachca_client.api.exceptions import (PachcaClientUnexpectedResponseExceptio
                                           PachcaClientException,
                                           PachcaClientEntryNotFound)
 
-logger = logging.getLogger(__name__)
 
+# Types
 ApiResponse = Union[Dict, List, str]
 ApiJsonPayload = Optional[Union[Dict, List]]
+
+# Constants
+DEFAULT_TIMEOUT = 30
+
+logger = logging.getLogger(__name__)
 
 
 class Client:
     API_URL = 'https://api.pachca.com/api/shared/v1/'
 
-    def __init__(self, access_token: str, proxies: Dict = {}, raise_on_error: bool = True) -> None:
+    def __init__(self, access_token: str, proxies: Dict = {}, raise_on_error: bool = True, timeout: int = DEFAULT_TIMEOUT) -> None:
         self.headers = {
             'Authorization': f'Bearer {access_token}'
         }
         self.proxies = proxies
         self.raise_on_error = raise_on_error
         self.session = Session()
+        self.timeout = timeout
 
     def call_api(self, path: str, method: str = 'get', payload: ApiJsonPayload = None) -> ApiResponse:
         request = Request(method=method, url=self.request_url(path), headers=self.headers)
@@ -38,7 +44,7 @@ class Client:
 
     def call(self, request: Request) -> ApiResponse:
         prequest = request.prepare()
-        response = self.session.send(prequest, proxies=self.proxies)
+        response = self.session.send(prequest, proxies=self.proxies, timeout=self.timeout)
         return self.handle_response(response)
 
     def check_response_status(self, response: Response) -> None:
