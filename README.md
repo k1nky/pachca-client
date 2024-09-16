@@ -79,7 +79,6 @@ thread_message = pachca.new_message(chat_id=thread['id'], content="My message in
 
 ```
 from pachca_client import File
-f = File('/home/shal/dev/pachca-client/requirements.txt')
 files = [
     File('file_a.txt'),
     File('image_a.png', file_type='image')
