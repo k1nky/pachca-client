@@ -5,6 +5,7 @@ setup(
     version='0.1.1',
     description='pachca.com API client',
     url='https://github.com/k1nky/pachca-client',
+    long_description_content_type='text/markdown',
     author='Andrey Shalashov',
     author_email='avshalashov@yandex.ru',
     license='Apache 2.0',
