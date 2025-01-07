@@ -31,6 +31,9 @@ class Pachca:
         self.client = client
         self.cache = cache
 
+    def delete_message(self, message_id: int) -> None:
+        return self.client.call_api(f'{PATH_MESSAGES}/{message_id}', method='delete')
+
     def delete_reaction(self, message_id: int, code: str) -> None:
         payload = {
             'code': code
