@@ -86,7 +86,30 @@ files = [
     File('image_a.png', file_type='image')
 ]
 message = pachca.new_message(chat_id=123456, content="Test message!", files=files)
+```
 
+### Send a message with buttons
+
+```
+from pachca_client import Button
+buttons = [
+  [Button.data('Yes', 'yes'), Button.data('No', 'no')],
+  [Button.url('Home', 'https://mycompany.org'),]
+]
+message = pachca.new_message(chat_id=123456, content="Test message!", buttons=buttons)
+```
+
+### Pin/Unpin message
+```
+from pachca_client.api.exceptions import PachcaAlreadyExists
+try:
+    pachca.pin_message(12345678)
+except PachcaAlreadyExists:
+    # the message has already pinned
+    pass
+
+# unpin message
+pachca.unpin_message(12345678)
 ```
 
 ## HTTP/HTTPS Proxy
