@@ -35,7 +35,7 @@ class Pachca:
         payload = {
             'code': code
         }
-        self.client.call_api(f'{PATH_MESSAGES}/{message_id}/reactions', method='delete', payload=payload)    
+        self.client.call_api(f'{PATH_MESSAGES}/{message_id}/reactions', method='delete', payload=payload)
 
     def get_cached(self, scope: str) -> Any:
         if self.cache is None:
@@ -164,6 +164,9 @@ class Pachca:
                     content: str,
                     chat_type: str = CHAT_TYPE_DISCUSSION,
                     parent_message_id: int = None,
+                    skip_invite_mentions: bool = False,
+                    link_preview: bool = False,
+                    buttons: List[List[Dict]] = [],
                     files: List[File] = []) -> Optional[Dict]:
         if isinstance(chat_id, str):
             if chat_type == CHAT_TYPE_DISCUSSION:
@@ -175,7 +178,8 @@ class Pachca:
         message = {
             'entity_type': chat_type,
             'content': content,
-            'entity_id': chat_id}
+            'entity_id': chat_id,
+            'skip_invite_mentions': skip_invite_mentions}
         if parent_message_id is not None:
             message['parent_message_id'] = parent_message_id
         if len(files) != 0:
@@ -184,8 +188,11 @@ class Pachca:
                 file_info = self.upload(file)
                 file.prepare(file_info['key'])
                 message['files'].append(file.as_dict())
+        if len(buttons) != 0:
+            message['buttons'] = buttons
         payload = {
-            'message': message}
+            'message': message,
+            'link_preview': link_preview}
         return self.client.call_api(path=PATH_MESSAGES, method='post', payload=payload)
 
     def new_reaction(self, message_id: int, code: str) -> None:
@@ -242,11 +249,15 @@ class Pachca:
     def update_message(self,
                        message_id: int,
                        content: str,
+                       buttons: List[List[Dict]] = None,
                        files: List[File] = []) -> Optional[Dict]:
         message = {
             'content': content,
             'files': []
         }
+        if buttons:
+            # set value [] to remove buttons
+            message['buttons'] = buttons
         # TODO: update files
         payload = {'message': message}
         self.client.call_api(f'{PATH_MESSAGES}/{message_id}', 'put', payload)
