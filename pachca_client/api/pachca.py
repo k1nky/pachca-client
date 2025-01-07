@@ -204,8 +204,11 @@ class Pachca:
         }
         self.client.call_api(f'{PATH_MESSAGES}/{message_id}/reactions', method='post', payload=payload)
 
-    def new_thread(self, id: int) -> Optional[Dict]:
-        return self.client.call_api(f'{PATH_MESSAGES}/{id}/thread', method='post')
+    def new_thread(self, message_id: int) -> Optional[Dict]:
+        return self.client.call_api(f'{PATH_MESSAGES}/{message_id}/thread', method='post')
+
+    def pin_message(self, message_id: int) -> None:
+        return self.client.call_api(f'{PATH_MESSAGES}/{message_id}/pin', method='post')
 
     def resolve_chat_name(self, name: str) -> Optional[int]:
         chats = self.get_cached(PATH_CHATS)
@@ -230,6 +233,9 @@ class Pachca:
             return value
         self.cache.update(scope, value)
         return value
+
+    def unpin_message(self, message_id: int) -> None:
+        return self.client.call_api(f'{PATH_MESSAGES}/{message_id}/pin', method='delete')
 
     def update_chat(self,
                     chat_id: Union[str, int],

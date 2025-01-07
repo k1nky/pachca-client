@@ -17,3 +17,7 @@ class PachcaClientEntryNotFound(PachcaClientException):
 
 class PachcaClientNotResolved(PachcaClientException):
     pass
+
+
+class PachcaAlreadyExists(PachcaClientException):
+    pass

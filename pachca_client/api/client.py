@@ -8,7 +8,8 @@ from typing import Dict, List, Union, Optional, IO
 from pachca_client.api.exceptions import (PachcaClientUnexpectedResponseException,
                                           PachcaClientBadRequestException,
                                           PachcaClientException,
-                                          PachcaClientEntryNotFound)
+                                          PachcaClientEntryNotFound,
+                                          PachcaAlreadyExists)
 
 
 # Types
@@ -62,6 +63,8 @@ class Client:
                 error_message = response.text
             if response.status_code == HTTPStatus.NOT_FOUND:
                 raise PachcaClientEntryNotFound(error_message)
+            if response.status_code == HTTPStatus.CONFLICT:
+                raise PachcaAlreadyExists(error_message)
             raise PachcaClientBadRequestException(error_message)
         raise PachcaClientUnexpectedResponseException(f"unexpected response with status code {response.status_code}")
 
